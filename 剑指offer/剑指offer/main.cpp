@@ -10,6 +10,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
+#include <queue>
 using namespace std;
 
 
@@ -529,6 +530,78 @@ public:
         
     }
     
+#pragma mark - 栈的压入和弹出序列
+    bool IsPopOrder(vector<int> pushV,vector<int> popV) {
+        if (pushV.size() ==0) {
+            return false;
+        }else{
+            stack<int> stack;
+            size_t size = pushV.size();
+            size_t k = 0;
+            for (size_t i = 0; i < size; i++) {
+                if (!stack.empty() && stack.top() == popV[i]) {
+                    stack.pop();
+                }else{
+                    while (true) {
+                        if (k >= size) {
+                            return false;
+                        }else{
+                            if (pushV[k] == popV[i]) {
+                                k ++;
+                                break;
+                            }else{
+                                stack.push(pushV[k]);
+                                k ++;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+
+        }
+    }
+    
+#pragma mark - 从上往下打印二叉树
+    vector<int> PrintFromTopToBottom(TreeNode *root) {
+        if (root == NULL) {
+            return {};
+        }
+        vector<int> value = {};
+        queue<TreeNode *> queue;
+        queue.push(root);
+        while (!queue.empty()) {
+            TreeNode *node = queue.front();
+            value.push_back(node->val);
+            queue.pop();
+            if (node->left != NULL) {
+                queue.push(node->left);
+            }
+            if (node->right != NULL) {
+                queue.push(node->right);
+            }
+        }
+        return value;
+    }
+    
+#pragma mark - 二叉搜索树的后序遍历序列
+    bool VerifySquenceOfBST(vector<int> sequence) {
+        if (sequence.size() <= 0) {
+            return false;
+        }
+        size_t i = 0;
+        size_t size = sequence.size();
+        while (--size > 0) {
+            //关键下面两步，左子树一定比根小，右子树一定比根大
+            while(sequence[i++] < sequence[size]);
+            while(sequence[i++] > sequence[size]);
+            if (i < size) {
+                return false;
+            }
+            i = 0;
+        }
+        return true;
+    }
 };
 
 
@@ -540,9 +613,22 @@ public:
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
-    
-    string str = " ";
-    str = s->reverseWords(str);
-    cout<<str<<endl;
-        return 0;
+    TreeNode *node1 = new TreeNode(1);
+    TreeNode *node2 = new TreeNode(2);
+    TreeNode *node3 = new TreeNode(3);
+    TreeNode *node4 = new TreeNode(4);
+    TreeNode *node5 = new TreeNode(5);
+    TreeNode *node6 = new TreeNode(6);
+    TreeNode *node7 = new TreeNode(7);
+    node1->left = node2;
+    node1->right = node3;
+    node2->left = node4;
+    node4->right = node5;
+    node3->right = node6;
+    node6->left = node7;
+    vector<int> value = s->PrintFromTopToBottom(node1);
+    for (size_t i = 0; i<value.size(); i++) {
+        cout<<value[i]<<endl;
+    }
+    return 0;
 }
