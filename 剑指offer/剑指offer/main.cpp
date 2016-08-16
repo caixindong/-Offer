@@ -30,7 +30,210 @@ struct TreeNode {
 };
 
 class Solution {
+    
 public:
+#pragma mark - 翻转单词
+    
+    //利用vector
+    string reverseWords(string str) {
+        if (str.length()<=1) {
+            return str;
+        }
+        vector<string> ve;
+        size_t i = 0;
+        size_t n = str.length();
+        while (i<n && str[i]==' ') {
+            i++;
+        }
+        while (n>0 && str[n-1]==' ' ) {
+            n--;
+        }
+        size_t index = 0;
+        while (index != -1 && index < n) {
+            index = str.find_first_of(" ",i);
+            string newStr = str.substr(i,index-i);
+            ve.push_back(newStr);
+            while (index < n && str[index] == ' ') {
+                index++;
+            }
+            i = index;
+        }
+        
+        if (ve.empty()) {
+            str = "";
+        }else{
+            size_t size = ve.size();
+            str = "";
+            for (size_t i = size -1;i>0 ; i--) {
+                str = str + ve[i] + " ";
+            }
+            str = str + ve[0];
+        }
+        return str;
+        
+    }
+    
+#pragma mark - 字符串全排列
+    /**
+     * 递归
+     **/
+    void swap(char &a,char &b){
+        char tmp = a;
+        a = b;
+        b = tmp;
+    }
+    
+    bool isToSwap(string str,int start,int end){
+        for (int i = start; i<end; i++) {
+            if (str[i]==str[end]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    //k表示当前选取到第几个数,n表示共有多少数.
+    void AllRange(vector<string> &ve, string str,int k,int n){
+        if (k==n) {
+            ve.push_back(str);
+        }
+        for (int i = k; i<n; i++) {
+            if (isToSwap(str, k, i)) {
+                swap(str[k], str[i]);
+                AllRange(ve,str, k+1,n);
+                swap(str[k], str[i]);
+            }
+        }
+        
+    }
+    
+    vector<string> Permutation(string str) {
+        vector<string> ve;
+        if (str.empty()) {
+            return ve;
+        }
+        AllRange(ve, str, 0,(int)str.length());
+        sort(ve.begin(), ve.end());
+        return ve;
+    }
+
+#pragma mark - 最长回文字符串
+    string longestPalindrome(string s) {
+        
+        if (s.length()<=1) {
+            return s;
+        }
+        int n = (int)s.length();
+        int max = 0;
+        int maxLeft = 0;
+        int maxRight = 0;
+        for(int i=0;i<n;i++){
+            //假定回文子串的长度为奇数
+            int start = i-1;
+            int end = i+1;
+            int len = 1;
+            int left = start;
+            int right = end;
+            while (start>=0&&end<n) {
+                if (s[start]==s[end]) {
+                    len = len+2;
+                    left = start;
+                    right = end;
+                    start--;
+                    end++;
+                }else{
+                    break;
+                }
+            }
+            if (len>max) {
+                max = len;
+                maxLeft = left;
+                maxRight = right;
+            }
+            //假定回文子串的长度为偶数
+            start = i;
+            end = i+1;
+            len = 0;
+            left = start;
+            right = end;
+            while (start>=0&&end<n) {
+                if (s[start]==s[end]) {
+                    len = len+2;
+                    left = start;
+                    right = end;
+                    start--;
+                    end++;
+                }else{
+                    break;
+                }
+            }
+            if (len>max) {
+                max = len;
+                maxLeft = left;
+                maxRight = right;
+            }
+        }
+        return s.substr(maxLeft,maxRight-maxLeft+1);
+    }
+    
+#pragma mark - 最长重复子串
+    int lengthOfLongestSubstring(string s) {
+        //保存每一个字母最近出现的位置
+        int lastPos[256];
+        memset(lastPos,-1,sizeof(lastPos));
+        int maxLen = 0;
+        int left = 0;
+        int n = (int)s.length();
+        for(int i = 0;i<n;i++){
+            if(lastPos[s[i]]>=left){
+                left = lastPos[s[i]]+1;
+            }
+            lastPos[s[i]] = i;
+            maxLen = max(maxLen, i - left + 1);
+        }
+        return maxLen;
+    }
+    
+#pragma mark - 字符串转数字
+    /**
+     * 前面有空格
+     * 不规格输出++，--
+     * 前面有数字就输出到数字就可以了，例如 123+as 输出 123
+     * 判断是否超过int的范围（-2^31~2^31-1）
+     **/
+    int myAtoi(string str) {
+        int n = (int)str.length();
+        long long num = 0;//注意
+        int i = 0;
+        int flag = 1;
+        while (str[i]==' ') {
+            i++;
+        }
+        if (str[i]=='-') {
+            flag = -1;
+            i++;
+        }else if (str[i]=='+'){
+            flag = 1;
+            i++;
+        }
+        for (; i<n; i++) {
+            if (str[i]>='0'&&str[i]<='9') {
+                num = num*10+(str[i]-'0')*flag;
+            }else{
+                return (int)num;
+            }
+            if (num>2147483647) {
+                return 2147483647;
+            }else if (num<-2147483648){
+                return -2147483648;
+            }
+            
+        }
+        
+        return (int)num;
+    }
+    
+#pragma mark - ====================分界线====================
     
 #pragma mark - 二维数组中的查找
     bool Find(vector<vector<int> > array,int target) {
@@ -291,121 +494,11 @@ public:
     }
     
 
-#pragma mark - 最长重复子串
-    int lengthOfLongestSubstring(string s) {
-        //保存每一个字母最近出现的位置
-        int lastPos[256];
-        memset(lastPos,-1,sizeof(lastPos));
-        int maxLen = 0;
-        int left = 0;
-        int n = (int)s.length();
-        for(int i = 0;i<n;i++){
-            if(lastPos[s[i]]>=left){
-                left = lastPos[s[i]]+1;
-            }
-            lastPos[s[i]] = i;
-            maxLen = max(maxLen, i - left + 1);
-        }
-        return maxLen;
-    }
-    
-#pragma mark - 最长回文字符串
-    string longestPalindrome(string s) {
-        
-        if (s.length()<=1) {
-            return s;
-        }
-        int n = (int)s.length();
-        int max = 0;
-        int maxLeft = 0;
-        int maxRight = 0;
-        for(int i=0;i<n;i++){
-            //假定回文子串的长度为奇数
-            int start = i-1;
-            int end = i+1;
-            int len = 1;
-            int left = start;
-            int right = end;
-            while (start>=0&&end<n) {
-                if (s[start]==s[end]) {
-                    len = len+2;
-                    left = start;
-                    right = end;
-                    start--;
-                    end++;
-                }else{
-                    break;
-                }
-            }
-            if (len>max) {
-                max = len;
-                maxLeft = left;
-                maxRight = right;
-            }
-            //假定回文子串的长度为偶数
-            start = i;
-            end = i+1;
-            len = 0;
-            left = start;
-            right = end;
-            while (start>=0&&end<n) {
-                if (s[start]==s[end]) {
-                    len = len+2;
-                    left = start;
-                    right = end;
-                    start--;
-                    end++;
-                }else{
-                    break;
-                }
-            }
-            if (len>max) {
-                max = len;
-                maxLeft = left;
-                maxRight = right;
-            }
-        }
-        return s.substr(maxLeft,maxRight-maxLeft+1);
-    }
-    
-#pragma mark - 字符串转数字
-    /**
-     * 前面有空格
-     * 不规格输出++，--
-     * 前面有数字就输出到数字就可以了，例如 123+as 输出 123
-     * 判断是否超过int的范围（-2^31~2^31-1）
-     **/
-    int myAtoi(string str) {
-        int n = (int)str.length();
-        long long num = 0;//注意
-        int i = 0;
-        int flag = 1;
-        while (str[i]==' ') {
-            i++;
-        }
-        if (str[i]=='-') {
-            flag = -1;
-            i++;
-        }else if (str[i]=='+'){
-            flag = 1;
-            i++;
-        }
-        for (; i<n; i++) {
-            if (str[i]>='0'&&str[i]<='9') {
-                num = num*10+(str[i]-'0')*flag;
-            }else{
-                return (int)num;
-            }
-            if (num>2147483647) {
-                return 2147483647;
-            }else if (num<-2147483648){
-                return -2147483648;
-            }
-            
-        }
 
-        return (int)num;
-    }
+    
+
+    
+
     
 #pragma mark - 数组中出现次数超过一半的数字
     int MoreThanHalfNum_Solution(vector<int> numbers) {
@@ -429,49 +522,7 @@ public:
         return 0;
     }
     
-#pragma mark - 字符串全排列
-    /**
-     * 递归
-     **/
-    void swap(char &a,char &b){
-        char tmp = a;
-        a = b;
-        b = tmp;
-    }
-    
-    bool isToSwap(string str,int start,int end){
-        for (int i = start; i<end; i++) {
-            if (str[i]==str[end]) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    //k表示当前选取到第几个数,n表示共有多少数.
-    void AllRange(vector<string> &ve, string str,int k,int n){
-        if (k==n) {
-            ve.push_back(str);
-        }
-        for (int i = k; i<n; i++) {
-            if (isToSwap(str, k, i)) {
-                swap(str[k], str[i]);
-                AllRange(ve,str, k+1,n);
-                swap(str[k], str[i]);
-            }
-        }
-        
-    }
-    
-    vector<string> Permutation(string str) {
-        vector<string> ve;
-        if (str.empty()) {
-            return ve;
-        }
-        AllRange(ve, str, 0,(int)str.length());
-        sort(ve.begin(), ve.end());
-        return ve;
-    }
+
 #pragma mark - 连续子数组的最大和
     int FindGreatestSumOfSubArray(vector<int> array) {
         if (array.empty()) {
@@ -489,46 +540,7 @@ public:
         return mx;
     }
 
-#pragma mark - 翻转单词
-    
-    //利用vector
-    string reverseWords(string str) {
-        if (str.length()<=1) {
-            return str;
-        }
-            vector<string> ve;
-            size_t i = 0;
-            size_t n = str.length();
-            while (i<n && str[i]==' ') {
-                i++;
-            }
-            while (n>0 && str[n-1]==' ' ) {
-                n--;
-            }
-            size_t index = 0;
-            while (index != -1 && index < n) {
-                index = str.find_first_of(" ",i);
-                string newStr = str.substr(i,index-i);
-                ve.push_back(newStr);
-                while (index < n && str[index] == ' ') {
-                    index++;
-                }
-                i = index;
-            }
-    
-            if (ve.empty()) {
-                str = " ";
-            }else{
-                size_t size = ve.size();
-                str = "";
-                for (size_t i = size -1;i>0 ; i--) {
-                    str = str + ve[i] + " ";
-                }
-                str = str + ve[0];
-            }
-        return str;
-        
-    }
+
     
 #pragma mark - 栈的压入和弹出序列
     bool IsPopOrder(vector<int> pushV,vector<int> popV) {
@@ -602,6 +614,48 @@ public:
         }
         return true;
     }
+    
+    
+#pragma mark - 大数相乘
+    void reverseString(string &str){
+        size_t i = 0;
+        size_t j = str.length()-1;
+        for (; i < j; i++,j--) {
+            char tmp = str[i];
+            str[i] = str[j];
+            str[j] = tmp;
+        }
+    }
+    
+    
+    string multiLargeNum(string a, string b){
+        size_t n = a.length();
+        size_t m = b.length();
+        string result(n + m - 1, '0');
+        //逆序更符合我们的运算习惯
+        reverseString(a);
+        reverseString(b);
+        //乘法进位
+        int multFlag;
+        //加法进位
+        int addFlag;
+        for (size_t i = 0; i < n ; i++) {
+            multFlag = 0;
+            addFlag = 0;
+            for (size_t j = 0; j < m; j++) {
+                int temp1 = (a[i]-'0')*(b[j]-'0')+multFlag;
+                multFlag = temp1/10;
+                temp1 = temp1%10;
+                int temp2 = (result[i+j]-'0')+temp1+addFlag;
+                addFlag = temp2/10;
+                result[i+j] = '0'+temp2%10;
+            }
+            result[i+m] += multFlag + addFlag;
+        }
+        reverseString(result);
+        return result;
+    }
+    
 };
 
 
@@ -613,22 +667,6 @@ public:
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
-    TreeNode *node1 = new TreeNode(1);
-    TreeNode *node2 = new TreeNode(2);
-    TreeNode *node3 = new TreeNode(3);
-    TreeNode *node4 = new TreeNode(4);
-    TreeNode *node5 = new TreeNode(5);
-    TreeNode *node6 = new TreeNode(6);
-    TreeNode *node7 = new TreeNode(7);
-    node1->left = node2;
-    node1->right = node3;
-    node2->left = node4;
-    node4->right = node5;
-    node3->right = node6;
-    node6->left = node7;
-    vector<int> value = s->PrintFromTopToBottom(node1);
-    for (size_t i = 0; i<value.size(); i++) {
-        cout<<value[i]<<endl;
-    }
+    cout<<s->multiLargeNum("123","45")<<endl;
     return 0;
 }
