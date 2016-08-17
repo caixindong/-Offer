@@ -32,6 +32,176 @@ struct TreeNode {
 class Solution {
     
 public:
+    
+#pragma mark - ====================查找算法====================
+    void swapFunc(int &a, int &b){
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+    
+#pragma mark - 直接插入排序
+    void insertSort(int a[],int size){
+        
+        for (int i = 1; i < size; i ++) {
+            if (a[i] < a[i-1]) {
+                int j = i - 1;
+                int x = a[i];
+                a[i]  = a[j];
+                while (x < a[j]) {
+                    a[j+1] = a[j];
+                    j--;
+                }
+                a[j+1] = x;
+            }
+        }
+    }
+    
+#pragma mark - 希尔排序
+    void normalInsertSort(int a[], int d, int size){
+        for (int i = d; d < size; i ++) {
+            if (a[i] < a[i - d]) {
+                int j = i -d;
+                int x = a[i];
+                a[i]  = a[j];
+                while (x < a[j]) {
+                    a[j+d] = a[j];
+                    j = j - d;
+                }
+                a[j+d] = x;
+            }
+        }
+    }
+    
+    
+    void shellSort(int a[],int size){
+        int d = size/2;
+        while (d >= 1) {
+            normalInsertSort(a, d, size);
+            d = d/2;
+        }
+    }
+    
+#pragma mark - 选择排序
+    void selectSort(int a[], int size){
+        for (int i = 0; i < size; i++) {
+            int k = i;
+            for (int j = i+1; j<size; j++) {
+                if (a[j] < a[k]) {
+                    k = j;
+                }
+            }
+            swapFunc(a[i], a[k]);
+        }
+    }
+    
+#pragma mark - 冒泡排序
+    void bubbleSort(int a[], int size){
+        for (int i=0; i<size; i++) {
+            for (int j = 0; j<size-i-1; j++) {
+                if (a[j] > a[j+1]) {
+                    swapFunc(a[j], a[j+1]);
+                }
+            }
+        }
+    }
+    
+#pragma mark - 堆排序
+    void adjustHeap(int i, int size, int a[]){
+        int left = 2*(i+1)-1;
+        int right = 2*(i+1);
+        int max = i;
+        if (i <= size/2 - 1) {
+            if (left < size && a[left] > a[max]) max = left;
+            if (right < size && a[right] > a[max]) max = right;
+            if (max != i) swapFunc(a[max], a[i]),adjustHeap(max, size, a);
+        }
+    }
+    
+    void setupHeap(int a[], int size){
+        for (int i = size/2-1; i>=0; i--) {
+            adjustHeap(i, size, a);
+        }
+    }
+    
+    void heapSort(int a[], int size) {
+        setupHeap(a, size);
+        for (int i = size-1 ; i > 0 ; i--) {
+            swapFunc(a[0], a[i]);
+            adjustHeap(0, size, a);
+        }
+    }
+    
+#pragma mark - 快速排序
+    int partion(int start, int end, int a[]) {
+        int i = start;
+        int j = end;
+        int x = a[i];
+        while (i < j) {
+            while (i < j && a[j] > x) j--;
+            if (i < j) a[i] = a[j], i++;
+            while (i < j && a[i] < x) i++;
+            if (i < j) a[j] = a[i], j--;
+        }
+        a[i] = x;
+        return i;
+    }
+    
+    void subQuickSort(int start, int end, int a[]){
+        if (start < end) {
+            int p = partion(start, end, a);
+            subQuickSort(start, p-1 , a);
+            subQuickSort(p+1 , end, a);
+        }
+    }
+    
+    void quickSort(int a[], int size){
+        subQuickSort(0, size-1, a);
+    }
+    
+#pragma mark - 归并排序
+    void mergeArray(int start,int mid, int end,int a[], int tmp[]){
+        int i = start;
+        int n = mid;
+        int j = mid+1;
+        int m = end;
+        int k = 0;
+        while (i <=n && j<=m) {
+            if (a[i] < a[j]) {
+                tmp[k++] = a[i++];
+            }else {
+                tmp[k++] = a[j++];
+            }
+        }
+        while (i <= n) {
+            tmp[k++] = a[i++];
+        }
+        while (j <= m) {
+            tmp[k++] = a[j++];
+        }
+        for (int i = 0; i < k; i++) {
+            a[start+i] = tmp[i];
+        }
+    }
+    
+    void subMergeSort(int start,int end ,int a[], int tmp[]){
+        if (start < end) {
+            int mid = (start+end)/2;
+            subMergeSort(start, mid, a, tmp);
+            subMergeSort(mid+1, end, a, tmp);
+            mergeArray(start, mid, end, a, tmp);
+        }
+    }
+    
+    void mergeSort(int a[],int size){
+        int *tmp = new int[size];
+        subMergeSort(0, size-1, a, tmp);
+        delete [] tmp;
+    }
+    
+    
+#pragma mark - ====================字符串====================
+    
 #pragma mark - 翻转单词
     
     //利用vector
@@ -83,6 +253,7 @@ public:
         b = tmp;
     }
     
+    //判断当前交换位置的数字之前有没有出现，出现过就不交换
     bool isToSwap(string str,int start,int end){
         for (int i = start; i<end; i++) {
             if (str[i]==str[end]) {
@@ -97,6 +268,7 @@ public:
         if (k==n) {
             ve.push_back(str);
         }
+        //当前第k位的数跟它后面的数交换
         for (int i = k; i<n; i++) {
             if (isToSwap(str, k, i)) {
                 swap(str[k], str[i]);
@@ -233,7 +405,7 @@ public:
         return (int)num;
     }
     
-#pragma mark - ====================分界线====================
+#pragma mark - ====================数组====================
     
 #pragma mark - 二维数组中的查找
     bool Find(vector<vector<int> > array,int target) {
@@ -251,6 +423,117 @@ public:
         }
         return false;
     }
+    
+#pragma mark - 旋转数组的最小数字
+    int minNumberInRotateArray(vector<int> rotateArray) {
+        if (rotateArray.size()==0) {
+            return 0;
+        }else{
+            int first = 0;
+            int last = (int)rotateArray.size()-1;
+            int mid  = 0;
+            while (rotateArray[first]>=rotateArray[last]) {
+                //终止条件
+                if (last-first==1) {
+                    return rotateArray[last];
+                }
+                mid = (first+last)/2;
+                //如果中间的数比first的大说明最小值到后半段，否则在前半段
+                if (rotateArray[mid]>=rotateArray[first]) {
+                    first = mid;
+                }else{
+                    last = mid;
+                }
+                //无法判断大小的时候，只能顺序查找，如{1,0,1,1,1}
+                if (rotateArray[first]==rotateArray[mid]&&rotateArray[last]==rotateArray[mid]) {
+                    int min = rotateArray[first];
+                    for (int i = first+1; i<=last; i++) {
+                        if (rotateArray[i]<min) {
+                            min = rotateArray[i];
+                        }
+                    }
+                    return min;
+                }
+               
+            }
+            return rotateArray[first];
+        }
+    }
+
+#pragma mark - 二分查找
+    
+    int binary_search(int start, int end, int key, int a[]) {
+        int mid = 0;
+        while (start <= end) {
+            mid = (start + end)/2;
+            if (a[mid] > key) {
+                end = mid - 1;
+            }else if (a[mid] < key){
+                start = mid + 1;
+            }else {
+                return mid;
+            }
+        }
+        return -1;
+    }
+    
+#pragma mark - 数组中出现次数超过一半的数字
+    int MoreThanHalfNum_Solution(vector<int> numbers) {
+        unordered_map<int, int> map;
+        int n = (int)numbers.size();
+        if (n==1) {
+            return numbers[0];
+        }
+        for (int i = 0; i<n; i++) {
+            if (map.count(numbers[i])>0) {
+                int count = map[numbers[i]];
+                count++;
+                map[numbers[i]] = count;
+                if (count>n/2) {
+                    return numbers[i];
+                }
+            }else{
+                map[numbers[i]] = 1;
+            }
+        }
+        return 0;
+    }
+    
+#pragma mark - 第 k 大的数
+    void HeapAdjust(vector<int>& nums,int i, int size) {
+        int left = 2*(i+1)-1;
+        int right = 2*(i+1);
+        int max = i;
+        if (i <= size/2-1) {
+            if (left < size && nums[left] > nums[max]) {
+                max = left;
+            }
+            if (right < size && nums[right] > nums[max]) {
+                max = right;
+            }
+            if (max != i) {
+                swapFunc(nums[i], nums[max]);
+                HeapAdjust(nums, max,size);
+            }
+        }
+    }
+    
+    int findKthLargest(vector<int>& nums, int k) {
+        int n = (int)nums.size();
+        if (k > n) {
+            return -1;
+        }
+        for (int i = n/2-1; i >= 0; i--) {
+            HeapAdjust(nums, i, n);
+        }
+        for (int i = 1; i < k; i++) {
+            swapFunc(nums[0], nums[n-i]);
+            HeapAdjust(nums, 0 ,n-i);
+        }
+        return nums[0];
+    }
+    
+#pragma mark - ====================未分类====================
     
 #pragma mark - 替换空格
     void replaceSpace(char *str,int length) {
@@ -328,37 +611,7 @@ public:
         }
     }
 
-#pragma mark - 旋转数组的最小数字
-    int minNumberInRotateArray(vector<int> rotateArray) {
-        if (rotateArray.size()==0) {
-            return 0;
-        }else{
-            int first = 0;
-            int last = (int)rotateArray.size()-1;
-            int mid  = 0;
-            while (rotateArray[first]>=rotateArray[last]) {
-                mid = (first+last)/2;
-                if (last-first==1) {
-                    return rotateArray[last];
-                }
-                if (rotateArray[first]==rotateArray[mid]&&rotateArray[last]==rotateArray[mid]) {
-                    int min = rotateArray[first];
-                    for (int i = first+1; i<=last; i++) {
-                        if (rotateArray[i]<min) {
-                            min = rotateArray[i];
-                        }
-                    }
-                    return min;
-                }
-                if (rotateArray[mid]>=rotateArray[first]) {
-                    first = mid;
-                }else{
-                    last = mid;
-                }
-            }
-            return rotateArray[first];
-        }
-    }
+
     
 #pragma mark - 变态跳台阶问题
     int jumpFloorII(int number) {
@@ -500,27 +753,7 @@ public:
     
 
     
-#pragma mark - 数组中出现次数超过一半的数字
-    int MoreThanHalfNum_Solution(vector<int> numbers) {
-        unordered_map<int, int> map;
-        int n = (int)numbers.size();
-        if (n==1) {
-            return numbers[0];
-        }
-        for (int i = 0; i<n; i++) {
-            if (map.count(numbers[i])>0) {
-                int count = map[numbers[i]];
-                count++;
-                map[numbers[i]] = count;
-                if (count>n/2) {
-                    return numbers[i];
-                }
-            }else{
-                map[numbers[i]] = 1;
-            }
-        }
-        return 0;
-    }
+
     
 
 #pragma mark - 连续子数组的最大和
@@ -667,6 +900,7 @@ public:
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
-    cout<<s->multiLargeNum("123","45")<<endl;
+    vector<int> ve = {3,2,7,5,8,5};
+    cout<<s->findKthLargest(ve,9)<<endl;
     return 0;
 }
