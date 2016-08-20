@@ -533,6 +533,142 @@ public:
         return nums[0];
     }
     
+#pragma mark - ====================链表====================
+    
+#pragma mark - 翻转链表
+    ListNode* reverseList(ListNode* head) {
+        if (head == NULL || head->next == NULL) {
+            return head;
+        }
+        ListNode *pre = head;
+        ListNode *p = head->next;
+        ListNode *next = NULL;
+        while (p != NULL) {
+            next = p->next;
+            p->next = pre;
+            pre = p;
+            p = next;
+        }
+        head->next = NULL;
+        return pre;
+    }
+    
+#pragma mark - 删除某个结点
+    void deleteNode(ListNode* node) {
+        //暂时包含后面那个结点
+        ListNode *tmp = node->next;
+        //node结点赋值下个结点的值以及next指针
+        node->val = node->next->val;
+        //删除后面那个结点
+        node->next = node->next->next;
+        delete tmp;
+    }
+
+#pragma mark - 删除倒数第n个结点
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        if (head == NULL) {
+            return head;
+        }
+        ListNode *newHead = new ListNode(0);
+        newHead->next = head;
+        ListNode *pre = newHead;
+        ListNode *p = newHead;
+        for (int i = 0; i < n; i++) {
+            p = p->next;
+        }
+        while (p->next != NULL) {
+            pre = pre->next;
+            p = p->next;
+        }
+        pre->next = pre->next->next;
+        return newHead->next;
+    }
+    
+#pragma mark - 合并两个有序的链表
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if (l1 == NULL) {
+            return l2;
+        }
+        if (l2 == NULL) {
+            return l1;
+        }
+        ListNode *newHead = new ListNode(0);
+        ListNode *p = newHead;
+        ListNode *p1 = l1;
+        ListNode *p2 = l2;
+        while (p1 != NULL && p2 != NULL ) {
+            if (p1->val < p2->val) {
+                p->next = p1;
+                p1 = p1->next;
+            }else {
+                p->next = p2;
+                p2 = p2->next;
+            }
+  
+        
+            p  = p ->next;
+        }
+        while (p1 != NULL) {
+            p->next = p1;
+            p1 = p1->next;
+            p  = p->next;
+        }
+        while (p2 != NULL) {
+            p->next = p2;
+            p2 = p2->next;
+            p  = p->next;
+        }
+        p->next = NULL;
+        return newHead->next;
+    }
+    
+#pragma mark - 判断链表是否有环
+    bool hasCycle(ListNode *head) {
+        if (head==NULL || head->next == NULL) {
+            return false;
+        }
+        //定义一个快指针和慢指针
+        ListNode *slow = head;
+        ListNode *fast = head;
+        while (fast != NULL && fast->next != NULL) {
+            slow = slow->next;
+            fast = fast->next->next;
+            //注意要判断fast不能为NULL，当快指针赶上慢指针的时候说明有环
+            if (fast != NULL && (fast == slow || fast->next == slow)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+#pragma mark - 两个链表的第一个公共节点
+    /**
+     * 第一种情况 两个链表都没有环，那么他们是Y形相交，计算他们的长度，求出长度差k，分别给两个链表定义两个遍历的指针，长链表的指针先走k步，之后两个链表的指针同时走，一直到相同的结点；
+     * 第二种情况，两个链表都有环，有两种交点，一种是进入环前有交点，另一种是链表入环的交点
+     * 不可能一个有环一个无环，一个单链表最后一个结点的next是指向NULL，而有环的链表的结点的next不指向NULL，所以不可能有结点相交
+     
+     **/
+    
+#pragma mark - 删除链表中重复节点
+    ListNode* deleteDuplicates(ListNode* head){
+        if (head == NULL || head->next == NULL) {
+            return head;
+        }
+        ListNode *pre = head;
+        ListNode *p = pre->next;
+        while (p != NULL) {
+            if (pre->val == p->val) {
+                pre->next = p->next;
+                p = p->next;
+            }else {
+                pre = pre->next;
+                p = p->next;
+            }
+        }
+        return head;
+    }
+    
+    
 #pragma mark - ====================未分类====================
     
 #pragma mark - 替换空格
@@ -625,40 +761,6 @@ public:
     }
     
     
-
-#pragma mark - 合并两个排序的链表,利用归并排序的思想
-    ListNode* Merge(ListNode* pHead1, ListNode* pHead2){
-        if (pHead1==NULL) {
-            return pHead2;
-        }
-        if (pHead2==NULL) {
-            return pHead1;
-        }
-        ListNode* newHead = new ListNode(0);
-        ListNode* go = newHead;
-        ListNode* p1 = pHead1;
-        ListNode* p2 = pHead2;
-        while (p1!=NULL&&p2!=NULL) {
-            if (p1->val<p2->val) {
-                go->next = p1;
-                p1 = p1->next;
-            }else{
-                go->next = p2;
-                p2 = p2->next;
-            }
-            go = go->next;
-        }
-        while (p1!=NULL) {
-            go->next = p1;
-            p1 = p1->next;
-        }
-        while (p2!=NULL) {
-            go->next = p2;
-            p2 = p2->next;
-        }
-        return newHead->next;
-        
-    }
     
 
 #pragma mark - 调整数组顺序使奇数位于偶数前面,利用直接插入排序的思想
@@ -900,7 +1002,9 @@ public:
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
-    vector<int> ve = {3,2,7,5,8,5};
-    cout<<s->findKthLargest(ve,9)<<endl;
+    ListNode *l1 = new ListNode(1);
+    ListNode *l2 = new ListNode(2);
+    l1->next = l2;
+    cout<<s->hasCycle(l1)<<endl;
     return 0;
 }
