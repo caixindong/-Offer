@@ -668,6 +668,113 @@ public:
         return head;
     }
     
+#pragma mark - ====================二叉树====================
+    
+#pragma mark - 根据中序和前序遍历结果重建二叉树
+    /**
+     *
+     *
+     *  @param pre      前序遍历
+     *  @param in       中序遍历
+     *  @param preStart 前序开始位置
+     *  @param inStart  中序开始位置
+     *  @param length   子序列的长度
+     *
+     *  @return
+     */
+    TreeNode* subReConstructBinaryTree(vector<int> &pre,vector<int> &in,int preStart,int inStart,int length) {
+        if (length <= 0) {
+            return NULL;
+        }
+        TreeNode *root = new TreeNode(pre[preStart]);
+        int len = 0;
+        int i = 0;
+        //一直找到中序遍历中与前序遍历第一个数相等的，获取子序列长度
+        while (i < inStart+length && in[i] != pre[preStart]) {
+            len = (++i)-inStart;
+        }
+        root->left = subReConstructBinaryTree(pre, in, preStart+1, inStart, len);
+        root->right = subReConstructBinaryTree(pre, in, preStart + len+ 1, inStart + len + 1, length-len-1);
+        return root;
+        
+    }
+    
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        return subReConstructBinaryTree(preorder, inorder, 0, 0, (int)preorder.size());
+    }
+    
+#pragma mark - 根据中序和后序遍历结果重建二叉树
+    
+    TreeNode* subReConstructBinaryTree02(vector<int> &post,vector<int> &in,int postStart,int postEnd,int inStart,int inEnd) {
+        if (postStart > postEnd) {
+            return NULL;
+        }
+        TreeNode *root = new TreeNode(post[postEnd]);
+        int p = 0;
+        for (int i = inStart; i <= inEnd; i++) {
+            if (in[i] == post[postEnd]) {
+                p = i;
+                break;
+            }
+        }
+        int len = p - inStart;
+        //参考上题
+        root->left = subReConstructBinaryTree02(post, in, postStart, postStart+len-1, inStart, p-1);
+        root->right = subReConstructBinaryTree02(post, in, postStart+len, postEnd-1, p+1, inEnd);
+
+        return root;
+        
+    }
+    
+    TreeNode* buildTree02(vector<int>& inorder, vector<int>& postorder) {
+        return subReConstructBinaryTree02(postorder, inorder, 0, (int)postorder.size()-1, 0, (int)inorder.size()-1);
+    }
+    
+#pragma mark - 翻转二叉树
+    TreeNode* invertTree(TreeNode* root) {
+        if (root) {
+            invertTree(root->left);
+            invertTree(root->right);
+            //翻转
+            TreeNode *tmp = root->left;
+            root->left = root->right;
+            root->right = tmp;
+        }
+        return root;
+    }
+    
+#pragma mark - 从上往下打印二叉树
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> ve;
+        if (root == NULL) {
+            return ve;
+        }
+        queue<TreeNode *> queue;
+        queue.push(root);
+        queue.push(NULL);
+        vector<int> current_ve;
+        while (!queue.empty()) {
+            TreeNode *node = queue.front();
+            queue.pop();
+            if (node == NULL) {
+                ve.push_back(current_ve);
+                current_ve.resize(0);
+                //关键
+                if (queue.size()>0) {
+                    queue.push(NULL);
+                }
+            }else {
+                current_ve.push_back(node->val);
+                if (node->left != NULL) {
+                    queue.push(node->left);
+                }
+                if (node->right != NULL) {
+                    queue.push(node->right);
+                }
+            }
+        }
+        return ve;
+    }
     
 #pragma mark - ====================未分类====================
     
@@ -715,35 +822,6 @@ public:
                 stack.pop();
             }
             return ve;
-        }
-    }
-    
-#pragma mark - 重建二叉树
-    struct TreeNode* reConstructBinaryTree(vector<int> pre,vector<int> in) {
-        if(pre.size()<=0){
-            return NULL;
-        }else{
-            TreeNode* root = new TreeNode(pre[0]);
-            int n = (int)pre.size();
-            vector<int> left_pre,left_in,right_pre,right_in;
-            int p = 0;
-            for(int i=0;i<n;i++){
-                if(in[i]== pre[0]){
-                    p = i;
-                }
-            }
-            for(int i = 0;i<p;i++){
-                left_pre.push_back(pre[i+1]);
-                left_in.push_back(in[i]);
-            }
-            for(int i = p+1;i<n;i++){
-                right_pre.push_back(pre[i]);
-                right_in.push_back(in[i]);
-            }
-            //分治的思想
-            root->left = reConstructBinaryTree(left_pre,left_in);
-            root->right = reConstructBinaryTree(right_pre,right_in);
-            return root;
         }
     }
 
