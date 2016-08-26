@@ -29,6 +29,16 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
+struct TreeLinkNode {
+    int val;
+    struct TreeLinkNode *left;
+    struct TreeLinkNode *right;
+    struct TreeLinkNode *next;
+    TreeLinkNode(int x) :val(x), left(NULL), right(NULL), next(NULL) {
+        
+    }
+};
+
 class Solution {
     
 public:
@@ -776,6 +786,137 @@ public:
         return ve;
     }
     
+#pragma mark - 判断某个数组是不是二叉树的后序遍历结果
+    bool VerifySquenceOfBST(vector<int> sequence) {
+        if (sequence.size() <= 0) {
+            return false;
+        }
+        size_t i = 0;
+        size_t size = sequence.size();
+        while (--size > 0) {
+            //关键下面两步，左子树一定比根小，右子树一定比根大
+            while(sequence[i++] < sequence[size]);
+            while(sequence[i++] > sequence[size]);
+            if (i < size) {
+                return false;
+            }
+            i = 0;
+        }
+        return true;
+    }
+#pragma mark - 判断二叉树中是否有和为某个值的路径
+    
+    bool hasPathSum(TreeNode* root, int sum) {
+        if (root == NULL) {
+            return false;
+        }
+        if (root->left == NULL && root->right == NULL && root->val != sum) {
+            return false;
+        }
+        return testHasPathSum(root, sum);
+    }
+    
+    /**
+     *  利用树的深度遍历
+     *
+     *  @param node
+     *  @param sum
+     *
+     *  @return
+     */
+    bool testHasPathSum(TreeNode *node, int sum) {
+        if (node->left == NULL && node->right == NULL && node->val == sum) {
+            return true;
+        }
+        if (node->left == NULL && node->right == NULL && node->val != sum) {
+            return false;
+        }
+        bool testLeft = false;
+        bool testRight = false;
+        if (node->left != NULL) {
+            testLeft = testHasPathSum(node->left, sum-node->val);
+        }
+        if (node->right != NULL) {
+            testRight = testHasPathSum(node->right, sum-node->val);
+        }
+        return testLeft|testRight;
+    }
+    
+#pragma mark - 二叉树中和为某个值的路径
+    vector<vector<int>> pathSum(TreeNode* root, int sum) {
+        vector<vector<int>> result;
+        if (root == NULL) {
+            return result;
+        }
+        if (root->left == NULL && root->right == NULL && root->val != sum) {
+            return result;
+        }
+        vector<int> tmp;
+        dfs(root, sum, tmp, result);
+        return result;
+    }
+    
+    /**
+     *  利用树的深度遍历
+     *
+     *  @param node
+     *  @param sum
+     *  @param tmpResult
+     *  @param result
+     */
+    void dfs(TreeNode *node,int sum, vector<int> tmpResult, vector<vector<int>> & result){
+        tmpResult.push_back(node->val);
+        if (node->left == NULL && node->right == NULL && node->val == sum) {
+            result.push_back(tmpResult);
+            return;
+        }
+        if (node->left == NULL && node->right == NULL && node->val != sum) {
+            return;
+        }
+        if (node->left != NULL) {
+            dfs(node->left, sum-node->val, tmpResult, result);
+        }
+        if (node->right != NULL) {
+            dfs(node->right, sum-node->val, tmpResult, result);
+        }
+    }
+
+#pragma mark - 二叉树的镜像
+    void Mirror(TreeNode *pRoot) {
+        if (pRoot==NULL) {
+            return;
+        }else{
+            TreeNode* tmp = pRoot->left;
+            pRoot->left = pRoot->right;
+            pRoot->right = tmp;
+            Mirror(pRoot->left);
+            Mirror(pRoot->right);
+        }
+    }
+    
+#pragma mark - 二叉树的下一个结点
+    TreeLinkNode* GetNext(TreeLinkNode* pNode) {
+        if (pNode == NULL) {
+            return NULL;
+        }
+        if (pNode->right != NULL) {
+            TreeLinkNode *p = pNode->right;
+            //找到右子树最左边的结点
+            while (p->left !=NULL) {
+                p = p->left;
+            }
+            return p;
+        }
+        //当pNode不是根结点的时候
+        while (pNode->next != NULL) {
+            if (pNode->next->left == pNode) {
+                return pNode->next;
+            }
+            pNode = pNode->next;
+        }
+        return NULL;
+    }
+    
 #pragma mark - ====================未分类====================
     
 #pragma mark - 替换空格
@@ -876,18 +1017,7 @@ public:
         }
     }
     
-#pragma mark - 二叉树的镜像
-    void Mirror(TreeNode *pRoot) {
-        if (pRoot==NULL) {
-            return;
-        }else{
-            TreeNode* tmp = pRoot->left;
-            pRoot->left = pRoot->right;
-            pRoot->right = tmp;
-            Mirror(pRoot->left);
-            Mirror(pRoot->right);
-        }
-    }
+
     
 #pragma mark - 顺时针打印矩阵
     vector<int> printMatrix(vector<vector<int> > matrix) {
@@ -1009,24 +1139,7 @@ public:
         return value;
     }
     
-#pragma mark - 二叉搜索树的后序遍历序列
-    bool VerifySquenceOfBST(vector<int> sequence) {
-        if (sequence.size() <= 0) {
-            return false;
-        }
-        size_t i = 0;
-        size_t size = sequence.size();
-        while (--size > 0) {
-            //关键下面两步，左子树一定比根小，右子树一定比根大
-            while(sequence[i++] < sequence[size]);
-            while(sequence[i++] > sequence[size]);
-            if (i < size) {
-                return false;
-            }
-            i = 0;
-        }
-        return true;
-    }
+
     
     
 #pragma mark - 大数相乘
@@ -1080,9 +1193,10 @@ public:
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
-    ListNode *l1 = new ListNode(1);
-    ListNode *l2 = new ListNode(2);
-    l1->next = l2;
-    cout<<s->hasCycle(l1)<<endl;
+    TreeNode *node1 = new TreeNode(1);
+    TreeNode *node2 = new TreeNode(2);
+    node1->left = node2;
+    cout<<s->hasPathSum(node1,0)<<endl;
+
     return 0;
 }
