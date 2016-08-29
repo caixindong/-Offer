@@ -917,6 +917,178 @@ public:
         return NULL;
     }
     
+#pragma mark - ====================栈与队列====================
+    
+#pragma mark - 用两个栈实现队列
+    class Queue {
+    public:
+        int size = 0;
+        stack<int> s1;
+        stack<int> s2;
+        
+        void push(int x) {
+            s1.push(x);
+            size++;
+        }
+        
+        void pop(void) {
+            if (!s2.empty()) {
+                s2.pop();
+            }else{
+                while (!s1.empty()) {
+                    int t = s1.top();
+                    s1.pop();
+                    s2.push(t);
+                }
+                s2.pop();
+            }
+            size--;
+        }
+        
+        int peek(void) {
+            if (!s2.empty()) {
+                return s2.top();
+            }else{
+                while (!s1.empty()) {
+                    int t = s1.top();
+                    s1.pop();
+                    s2.push(t);
+                }
+                return s2.top();
+            }
+        }
+        
+        bool empty(void) {
+            if (size==0) {
+                return true;
+            }else{
+                return false;
+            }
+        }
+    };
+    
+#pragma mark - 用两个队列实现栈
+    
+    class Stack {
+        int size=0;
+        queue<int> q1;
+        queue<int> q2;
+    public:
+
+        void push(int x) {
+            //哪个队列不为空就往哪个插入值
+            if (empty()||!q1.empty()) {
+                q1.push(x);
+            }else{
+                q2.push(x);
+            }
+            size++;
+        }
+        
+        void pop() {
+            if (!q1.empty()) {
+                while (q1.size()>1) {
+                    int a = q1.front();
+                    q1.pop();
+                    q2.push(a);
+                }
+                q1.pop();
+            }else{
+                while (q2.size()>1) {
+                    int a = q2.front();
+                    q2.pop();
+                    q1.push(a);
+                }
+                q2.pop();
+            }
+            size--;
+        }
+
+        int top() {
+            if (!q1.empty()) {
+                return q1.back();
+            }else{
+                return q2.back();
+            }
+        }
+        
+        bool empty() {
+            if (size==0) {
+                return true;
+            }else{
+                return false;
+            }
+        }
+    };
+    
+#pragma mark - 实现一个栈，可以用常数级时间找出栈中的最小值
+    
+    class MinStack {
+        stack<int> s;
+        stack<int> minStack;
+    public:
+        void push(int x) {
+            if (s.empty()) {
+                s.push(x);
+                minStack.push(x);
+            }else{
+                s.push(x);
+                int k = minStack.top();
+                if (k<=x) {
+                    minStack.push(k);
+                }else{
+                    minStack.push(x);
+                }
+            }
+        }
+        
+        void pop() {
+            s.pop();
+            minStack.pop();
+        }
+        
+        int top() {
+            return s.top();
+        }
+        
+        int getMin() {
+            return minStack.top();
+        }
+    };
+    
+#pragma mark - 判断栈的压栈、弹栈序列是否合法
+    
+    bool IsPopOrder(vector<int> pushV,vector<int> popV) {
+        if (pushV.size() == 0) {
+            return false;
+        }else{
+            stack<int> stack;
+            size_t size = pushV.size();
+            size_t k = 0;
+            for (size_t i = 0; i < size; i++) {
+                if (!stack.empty() && stack.top() == popV[i]) {
+                    stack.pop();
+                }else{
+                    while (true) {
+                        if (k >= size) {
+                            return false;
+                        }else{
+                            if (pushV[k] == popV[i]) {
+                                k ++;
+                                break;
+                            }else{
+                                stack.push(pushV[k]);
+                                k ++;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+            
+        }
+    }
+    
 #pragma mark - ====================未分类====================
     
 #pragma mark - 替换空格
@@ -965,8 +1137,6 @@ public:
             return ve;
         }
     }
-
-
     
 #pragma mark - 变态跳台阶问题
     int jumpFloorII(int number) {
@@ -979,9 +1149,6 @@ public:
         }
     }
     
-    
-    
-
 #pragma mark - 调整数组顺序使奇数位于偶数前面,利用直接插入排序的思想
      void reOrderArray(vector<int> &array) {
         for (int i=1; i<array.size(); i++) {
@@ -1055,16 +1222,6 @@ public:
         }
         return  result;
     }
-    
-
-
-    
-
-    
-
-    
-
-    
 
 #pragma mark - 连续子数组的最大和
     int FindGreatestSumOfSubArray(vector<int> array) {
@@ -1081,40 +1238,6 @@ public:
             }
         }
         return mx;
-    }
-
-
-    
-#pragma mark - 栈的压入和弹出序列
-    bool IsPopOrder(vector<int> pushV,vector<int> popV) {
-        if (pushV.size() ==0) {
-            return false;
-        }else{
-            stack<int> stack;
-            size_t size = pushV.size();
-            size_t k = 0;
-            for (size_t i = 0; i < size; i++) {
-                if (!stack.empty() && stack.top() == popV[i]) {
-                    stack.pop();
-                }else{
-                    while (true) {
-                        if (k >= size) {
-                            return false;
-                        }else{
-                            if (pushV[k] == popV[i]) {
-                                k ++;
-                                break;
-                            }else{
-                                stack.push(pushV[k]);
-                                k ++;
-                            }
-                        }
-                    }
-                }
-            }
-            return true;
-
-        }
     }
     
 #pragma mark - 从上往下打印二叉树
@@ -1138,9 +1261,6 @@ public:
         }
         return value;
     }
-    
-
-    
     
 #pragma mark - 大数相乘
     void reverseString(string &str){
@@ -1183,13 +1303,6 @@ public:
     }
     
 };
-
-
-
-
-
-
-
 
 int main(int argc, const char * argv[]) {
     Solution* s = new Solution();
