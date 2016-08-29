@@ -43,7 +43,7 @@ class Solution {
     
 public:
     
-#pragma mark - ====================查找算法====================
+#pragma mark - ====================排序算法====================
     void swapFunc(int &a, int &b){
         int temp = a;
         a = b;
