@@ -253,6 +253,23 @@ public:
         
     }
     
+    void reverseWords02(string &s){
+        size_t i = 0,to = 0;
+        while(i < s.length()) {
+            while (i < s.length() && s[i]== ' ') i++;
+            if (i == s.length()) break;
+            
+            size_t wordPre = i;
+            while (i < s.length() && s[i] != ' ') i++;
+            for (size_t k = wordPre; k < i; k++) s[to++] = s[k];
+            reverse(s.begin() + to - (i - wordPre),s.begin() + to);
+            s[to++] = ' ';
+        }
+        s.resize(to > 0 ? to-1 : to);
+        reverse(s.begin(),s.end());
+        
+    }
+    
 #pragma mark - 字符串全排列
     /**
      * 递归
@@ -1087,6 +1104,68 @@ public:
             return true;
             
         }
+    }
+    
+#pragma mark - 位运算
+    //通过异或可以实现两个数互换
+    //某个数异或-1，相当于取反
+#pragma mark - 二进制有多少个1
+    int hammingWeight(uint32_t n) {
+        int count = 0;
+        while (n != 0) {
+            n = n & (n-1);
+            count++;
+        }
+        return count;
+    }
+    
+#pragma mark - 给一个数组，所有数字都出现了偶数次，只有一个出现了一次，找出这个数
+    int singleNumber(vector<int>& nums) {
+        if (nums.size() == 1) {
+            return nums[0];
+        }
+        for (size_t i = 1; i < nums.size(); i++) {
+            nums[0] ^= nums[i];
+        }
+        return nums[0];
+    }
+    
+#pragma mark - 给一个数组，所有数字都出现了三次，只有一个出现了一次，找出这个数
+    int singleNumber02(vector<int>& nums) {
+        //去掉那个特殊的数，所有数上1的个数和是3的倍数，通过统计每一位上面1的个数，如果除以3有余数说明那个特殊的数在这个位上为1
+        int bit[32] = {0};
+        int result = 0;
+        for (size_t i = 0; i < 32; i++) {
+            for (size_t j = 0; j < nums.size(); j++) {
+                bit[i] += (nums[j]>>i) & 1;
+            }
+            result |= (bit[i] % 3)<<i;
+        }
+        return result;
+    }
+    
+#pragma mark - 给一个数组，所有数组都出现了偶数次，只有两个数字出现了一次，找出这两个数
+    vector<int> singleNumber03(vector<int>& nums) {
+        int resultA = 0;
+        int resultB = 0;
+        int tmpResult = 0;
+        
+        for (size_t i = 0; i < nums.size(); i++) {
+            tmpResult ^= nums[i];
+        }
+        //获取异或结果右边第一个1的位置
+        int index = tmpResult - (tmpResult & (tmpResult - 1));
+        for (size_t i = 0; i < nums.size(); i++) {
+            if ((nums[i]>>(index-1)) % 2 == 0) {
+                resultA ^= nums[i];
+            }else {
+                resultB ^= nums[i];
+            }
+        }
+        
+        vector<int> ve = {resultA, resultB};
+        
+        return ve;
     }
     
 #pragma mark - ====================未分类====================
