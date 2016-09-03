@@ -934,6 +934,47 @@ public:
         return NULL;
     }
     
+#pragma mark - 输入两颗二叉树A，B，判断B是不是A的子结构。
+    bool HasSubtree(TreeNode* pRoot1, TreeNode* pRoot2){
+        if (pRoot1==NULL||pRoot2==NULL) {
+            return false;
+        }
+        return isSubTree(pRoot1, pRoot2)||HasSubtree(pRoot1->left, pRoot2)||HasSubtree(pRoot1->right, pRoot2);
+        
+    }
+    
+    bool isSubTree(TreeNode* pRoot1,TreeNode* pRoot2){
+        if (pRoot2 == NULL) return true;
+        if (pRoot1 == NULL) return false;
+        if (pRoot1->val==pRoot2->val) {
+            return isSubTree(pRoot1->left, pRoot2->left)&&isSubTree(pRoot1->right, pRoot2->right);
+        }else{
+            return false;
+        }
+    }
+    
+#pragma mark - 从上往下打印二叉树
+    vector<int> PrintFromTopToBottom(TreeNode *root) {
+        if (root == NULL) {
+            return {};
+        }
+        vector<int> value = {};
+        queue<TreeNode *> queue;
+        queue.push(root);
+        while (!queue.empty()) {
+            TreeNode *node = queue.front();
+            value.push_back(node->val);
+            queue.pop();
+            if (node->left != NULL) {
+                queue.push(node->left);
+            }
+            if (node->right != NULL) {
+                queue.push(node->right);
+            }
+        }
+        return value;
+    }
+    
 #pragma mark - ====================栈与队列====================
     
 #pragma mark - 用两个栈实现队列
@@ -1244,24 +1285,7 @@ public:
     }
     
 
-#pragma mark - 输入两颗二叉树A，B，判断B是不是A的子结构。
-    bool HasSubtree(TreeNode* pRoot1, TreeNode* pRoot2){
-        if (pRoot1==NULL||pRoot2==NULL) {
-            return false;
-        }
-        return isSubTree(pRoot1, pRoot2)||HasSubtree(pRoot1->left, pRoot2)||HasSubtree(pRoot1->right, pRoot2);
-        
-    }
-    
-    bool isSubTree(TreeNode* pRoot1,TreeNode* pRoot2){
-        if (pRoot2 == NULL) return true;
-        if (pRoot1 == NULL) return false;
-        if (pRoot1->val==pRoot2->val) {
-            return isSubTree(pRoot1->left, pRoot2->left)&&isSubTree(pRoot1->right, pRoot2->right);
-        }else{
-            return false;
-        }
-    }
+
     
 
     
@@ -1319,27 +1343,7 @@ public:
         return mx;
     }
     
-#pragma mark - 从上往下打印二叉树
-    vector<int> PrintFromTopToBottom(TreeNode *root) {
-        if (root == NULL) {
-            return {};
-        }
-        vector<int> value = {};
-        queue<TreeNode *> queue;
-        queue.push(root);
-        while (!queue.empty()) {
-            TreeNode *node = queue.front();
-            value.push_back(node->val);
-            queue.pop();
-            if (node->left != NULL) {
-                queue.push(node->left);
-            }
-            if (node->right != NULL) {
-                queue.push(node->right);
-            }
-        }
-        return value;
-    }
+
     
 #pragma mark - 大数相乘
     void reverseString(string &str){
