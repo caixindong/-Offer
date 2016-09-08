@@ -11,6 +11,8 @@
 #include <stack>
 #include <unordered_map>
 #include <queue>
+#include <set>
+#include <sstream>
 using namespace std;
 
 
@@ -209,6 +211,31 @@ public:
         delete [] tmp;
     }
     
+#pragma mark - 最小 K 个数(堆排序的延伸)
+    vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+        vector<int> result = {};
+        
+        if (input.size() < k || k < 1) {
+            return result;
+        }
+        
+        multiset<int,greater<int>> heap;
+        for (size_t i = 0; i < input.size() ; i++) {
+            if (heap.size() < k) {
+                heap.insert(input[i]);
+            }else {
+                if (input[i] < *(heap.begin())) {
+                    heap.erase(heap.begin());
+                    heap.insert(input[i]);
+                }
+            }
+        }
+        
+        for (auto pos = heap.begin(); pos != heap.end(); pos++) {
+            result.push_back(*pos);
+        }
+        return  result;
+    }
     
 #pragma mark - ====================字符串====================
     
@@ -253,21 +280,25 @@ public:
         
     }
     
-    void reverseWords02(string &s){
-        size_t i = 0,to = 0;
-        while(i < s.length()) {
-            while (i < s.length() && s[i]== ' ') i++;
+
+    //先翻转每个单词，再翻转整个句子
+    void reverseWord02(string &s){
+        size_t i = 0;
+        size_t to = 0;
+        while (i < s.length()) {
+            while (i < s.length() && s[i] == ' ')  i++;
             if (i == s.length()) break;
-            
-            size_t wordPre = i;
+            size_t wordBegin = i;
             while (i < s.length() && s[i] != ' ') i++;
-            for (size_t k = wordPre; k < i; k++) s[to++] = s[k];
-            reverse(s.begin() + to - (i - wordPre),s.begin() + to);
+            size_t workLen = i - wordBegin;
+            for (size_t j = wordBegin; j < i; j++) {
+                s[to++] = s[j];
+            }
+            reverse(s.begin() + to - workLen, s.begin() + to);
             s[to++] = ' ';
         }
-        s.resize(to > 0 ? to-1 : to);
-        reverse(s.begin(),s.end());
-        
+        s.resize(to > 0? to-1:to);
+        reverse(s.begin(), s.end());
     }
     
 #pragma mark - 字符串全排列
@@ -523,10 +554,48 @@ public:
                 map[numbers[i]] = 1;
             }
         }
+        
+        
+        return 0;
+    }
+    
+    
+    int MoreThanHalfNum_Solution02(vector<int> numbers) {
+        int n = (int)numbers.size();
+    
+        if (n == 0) {
+            return 0;
+        }
+        
+        int result = numbers[0];
+        int time = 1;
+        for (int i = 1; i < n; i++) {
+            if (time == 0) {
+                result = numbers[i];
+                time = 1;
+            }else if (result == numbers[i]) {
+                time++;
+            }else {
+                time--;
+            }
+        }
+        
+        int count = 1;
+        for (int i = 0; i < n; i++) {
+            if (result == numbers[i]) {
+                count++;
+            }
+        }
+        if (count > n/2) {
+            return result;
+        }
         return 0;
     }
     
 #pragma mark - 第 k 大的数
+    /**
+     * 堆排序（用STL的set也可以）
+     **/
     void HeapAdjust(vector<int>& nums,int i, int size) {
         int left = 2*(i+1)-1;
         int right = 2*(i+1);
@@ -558,6 +627,167 @@ public:
             HeapAdjust(nums, 0 ,n-i);
         }
         return nums[0];
+    }
+    
+#pragma mark - 把数组排成最小的数
+    /**排序规则如下：
+    * 若ab > ba 则 a > b，
+    * 若ab < ba 则 a < b，
+    * 若ab = ba 则 a = b；
+    * 解释说明：
+    * 比如 "3" < "31"但是 "331" > "313"，所以要将二者拼接起来进行比较
+    */
+    static bool compare(const string &s1 ,const string &s2){
+        string ss1 = s1 + s2;
+        string ss2 = s2 + s1;
+        return ss1 < ss2;
+    }
+    
+    /**
+     *  先将整型数组转换成String数组，然后将String数组排序，最后将排好序的字符串数组拼接出来。关键就是制定排序规则
+     *
+     */
+    string PrintMinNumber(vector<int> numbers) {
+        if (numbers.size() <= 0) {
+            return "";
+        }
+        
+        vector<string> result;
+        
+        for (size_t i = 0; i < numbers.size(); i++) {
+            stringstream ss;
+            ss<<numbers[i];
+            result.push_back(ss.str());
+        }
+        
+        sort(result.begin(), result.end(), compare);
+        
+        string resultStr = "";
+        
+        for (size_t i = 0; i < result.size(); i++) {
+            resultStr.append(result[i]);
+        }
+        
+        return resultStr;
+    }
+    
+#pragma mark - 数组的逆序对
+    //采用归并解决
+    int mergeSort(vector<int> &data, int start, int end,vector<int> &tmp){
+        if (start == end) {
+            return 0;
+        }
+        int mid = (start + end)/2;
+        
+        int leftCount = mergeSort(data, start, mid, tmp)%1000000007 ;
+        
+        int rightCount = mergeSort(data, mid+1, end, tmp)%1000000007 ;
+    
+        
+        int leltBack = mid;
+        
+        int rightBack = end;
+        
+        int count = 0;
+        
+        int tmpIndex = end;
+        
+        while (start <= leltBack && mid+1 <= rightBack) {
+            if (data[leltBack] > data[rightBack]) {
+                tmp[tmpIndex--] = data[leltBack--];
+                count += rightBack - mid;
+                if (count > 1000000007 ) {
+                    count %= 1000000007 ;
+                }
+            }else {
+                tmp[tmpIndex--] = data[rightBack--];
+            }
+        }
+        
+        while (start <= leltBack) {
+            tmp[tmpIndex--] = data[leltBack--];
+        }
+        
+        while (mid+1 <= rightBack) {
+            tmp[tmpIndex--] = data[rightBack--];
+        }
+        
+        for (int i = start; i <= end; i++) {
+            data[i] = tmp[i];
+        }
+        
+        return (count + leftCount + rightCount)%1000000007 ;
+        
+    }
+    
+    int InversePairs(vector<int> data) {
+        if ( data.size() == 0) {
+            return 0;
+        }
+        int len = (int)data.size();
+        
+        vector<int> tmp(data);
+        
+        return mergeSort(data, 0, len-1, tmp);
+    }
+    
+#pragma mark - 数字在排序数组中出现的次数
+    /**
+     *  看到排序要想到二分查找，通过二分查找找到k第一次出现的位置和最后一次出现的位置，就可以计算出次数
+     *
+     */
+    
+    int findFirstK(vector<int> data, int start, int end, int k) {
+        int mid = -1;
+        while (start <= end) {
+            mid = (start + end)/2;
+            if (data[mid] > k) {
+                end = mid - 1;
+            }else if (data[mid] < k) {
+                start = mid + 1;
+            }else {
+                if (mid == 0 || (mid  > 0 && data[mid-1] != k)) {
+                    return mid;
+                }else {
+                    end = mid - 1;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    int findLastK(vector<int> data, int start, int end, int k){
+        int mid = -1;
+        int len = (int)data.size();
+        while (start <= end) {
+            mid = (start + end)/2;
+            if (data[mid] > k) {
+                end = mid - 1;
+            }else if (data[mid] < k) {
+                start = mid + 1;
+            }else {
+                if (mid == len-1 || (mid  < len-1 && data[mid+1] != k)) {
+                    return mid;
+                }else {
+                    start = mid + 1;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    int GetNumberOfK(vector<int> data ,int k) {
+        if (data.size() == 0) {
+            return 0;
+        }
+        int size = (int)data.size();
+        int firstIndex = findFirstK(data, 0, size-1, k);
+        int lastIndex = findLastK(data, 0, size-1, k);
+        if (firstIndex > -1 && lastIndex > -1) {
+            return lastIndex - firstIndex + 1;
+        }
+        return 0;
+        
     }
     
 #pragma mark - ====================链表====================
@@ -675,6 +905,40 @@ public:
      * 不可能一个有环一个无环，一个单链表最后一个结点的next是指向NULL，而有环的链表的结点的next不指向NULL，所以不可能有结点相交
      
      **/
+    ListNode* FindFirstCommonNode( ListNode *pHead1, ListNode *pHead2) {
+        int len1 = getListLen(pHead1);
+        int len2 = getListLen(pHead2);
+        int diff = len1 - len2;
+        ListNode *longP = pHead1;
+        ListNode *shortP = pHead2;
+        if (len2 > len1) {
+            longP = pHead2;
+            shortP = pHead1;
+            diff = len2 - len1;
+        }
+        for (int i = 0; i < diff; i++) {
+            longP = longP->next;
+        }
+        
+        while (longP != NULL && shortP != NULL && longP != shortP) {
+            longP = longP->next;
+            shortP = shortP->next;
+        }
+        
+        return shortP;
+        
+    }
+    
+    int getListLen(ListNode *head){
+  
+        int count = 0;
+        ListNode *p = head;
+        while (p != NULL) {
+            p = p->next;
+            count++;
+        }
+        return count;
+    }
     
 #pragma mark - 删除链表中重复节点
     ListNode* deleteDuplicates(ListNode* head){
@@ -975,6 +1239,44 @@ public:
         return value;
     }
     
+#pragma mark - 二叉树深度
+    //深度=max（左子树深度，右子树）+ 1
+    int TreeDepth(TreeNode* pRoot) {
+        if (pRoot == NULL) {
+            return 0;
+        }
+        int left = TreeDepth(pRoot->left);
+        int right = TreeDepth(pRoot->right);
+        return left > right ? (left + 1):(right + 1);
+    }
+    
+#pragma mark - 判断平衡二叉树
+    //后序遍历，判断子树是否平衡，一直到根部
+    bool IsBalanced(TreeNode* root, int *depth) {
+        if (root == NULL) {
+            *depth = 0;
+            return true;
+        }
+        int left;
+        int right;
+        if (IsBalanced(root->left, &left) && IsBalanced(root->right, &right)) {
+            int diff = abs(left - right);
+            if (diff <= 1) {
+                *depth = left > right ?(left + 1):(right + 1);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    bool IsBalanced_Solution(TreeNode* pRoot) {
+        if (pRoot == NULL) {
+            return true;
+        }
+        int depth = 0;
+        return IsBalanced(pRoot, &depth);
+    }
+    
 #pragma mark - ====================栈与队列====================
     
 #pragma mark - 用两个栈实现队列
@@ -1186,27 +1488,24 @@ public:
     }
     
 #pragma mark - 给一个数组，所有数组都出现了偶数次，只有两个数字出现了一次，找出这两个数
-    vector<int> singleNumber03(vector<int>& nums) {
-        int resultA = 0;
-        int resultB = 0;
+    
+    void FindNumsAppearOnce(vector<int> data,int* num1,int *num2) {
         int tmpResult = 0;
         
-        for (size_t i = 0; i < nums.size(); i++) {
-            tmpResult ^= nums[i];
+        for (size_t i = 0; i < data.size(); i++) {
+            tmpResult ^= data[i];
         }
-        //获取异或结果右边第一个1的位置
+        //获取异或结果最右边的1的位置
         int index = tmpResult - (tmpResult & (tmpResult - 1));
-        for (size_t i = 0; i < nums.size(); i++) {
-            if ((nums[i]>>(index-1)) % 2 == 0) {
-                resultA ^= nums[i];
+        
+        for (size_t i = 0; i < data.size(); i ++) {
+            if ((data[i]>>(index-1))%2 == 0) {
+                *num1 ^= data[i];
             }else {
-                resultB ^= nums[i];
+                *num2 ^= data[i];
             }
         }
         
-        vector<int> ve = {resultA, resultB};
-        
-        return ve;
     }
     
 #pragma mark - ====================未分类====================
@@ -1284,11 +1583,6 @@ public:
         }
     }
     
-
-
-    
-
-    
 #pragma mark - 顺时针打印矩阵
     vector<int> printMatrix(vector<vector<int> > matrix) {
         vector<int> result;
@@ -1343,6 +1637,27 @@ public:
         return mx;
     }
     
+    int FindGreatestSumOfSubArray02(vector<int> array) {
+        if (array.empty()) {
+            return 0;
+        }
+        int mx = INT_MIN;
+        //dp[i]指定以第i个数结尾连续子数组的最大和
+        vector<int> dp;
+        dp.resize(array.size(), INT_MIN);
+        for (size_t i = 0; i < dp.size(); i++) {
+            if (i == 0 || dp[i - 1] <= 0) {
+                dp[i] = array[i];
+            }else {
+                dp[i] = dp[i-1] + array[i];
+            }
+            if (dp[i] > mx) {
+                mx = dp[i];
+            }
+        }
+        
+        return mx;
+    }
 
     
 #pragma mark - 大数相乘
@@ -1384,15 +1699,100 @@ public:
         reverseString(result);
         return result;
     }
+  
+    
+#pragma mark - 第n个丑数
+    /**
+     *  用动态规划,丑数的定义为只包含因子2、3和5的数称作丑数，1是最小的丑数，因此下一个丑数是由上一个丑数乘以2，3，5中的一个得到的
+     *
+     */
+    int GetUglyNumber_Solution(int index) {
+        if (index < 7) {
+            return index;
+        }
+        vector<int> ve(index);
+        
+        ve[0] = 1;
+        
+        int t2 = 0,t3 = 0,t5 = 0;
+        
+        for (int i = 1; i < index; i++) {
+            ve[i] = min(ve[t2]*2, min(ve[t3]*3, ve[t5]*5));
+            
+            if (ve[i] >= ve[t2]*2) t2++;
+            
+            if (ve[i] >= ve[t3]*3) t3++;
+            
+            if (ve[i] >= ve[t5]*5) t5++;
+        }
+        
+        return ve[index-1];
+    }
+    
+#pragma mark - 第一个只出现一次的字符
+    //用hash表
+    int FirstNotRepeatingChar(string str) {
+        if (str.length() <= 0) {
+            return -1;
+        }
+        
+        unordered_map<char, int> map;
+        
+        for (size_t i = 0; i < str.length(); i++) {
+            if (map.count(str[i]) > 0) {
+                int count = map[str[i]];
+                count++;
+                map[str[i]] = count;
+            }else {
+                map[str[i]] = 1;
+            }
+        }
+        
+        int index = INT_MAX;
+        
+        for (auto pos = map.begin(); pos != map.end(); pos++) {
+            if (pos->second == 1) {
+                int tmpIndex = (int)str.find_first_of(pos->first);
+                if (tmpIndex < index) {
+                    index = tmpIndex;
+                }
+            }
+        }
+        
+        return index;
+    }
+    
+#pragma mark - 和为S的两个数字
+    vector<int> FindNumbersWithSum(vector<int> array,int sum) {
+        vector<int> result;
+        result.resize(0);
+        if (array.size() == 0) {
+            return result;
+        }
+        size_t n = array.size();
+        size_t start = 0;
+        size_t end = n-1;
+        while (start <= end) {
+            int tmp = array[start] + array[end];
+            if (tmp > sum) {
+                end--;
+            }else if (tmp < sum) {
+                start++;
+            }else {
+                result.push_back(array[start]);
+                result.push_back(array[end]);
+                break;
+            }
+        }
+        
+        return result;
+    }
     
 };
 
 int main(int argc, const char * argv[]) {
-    Solution* s = new Solution();
-    TreeNode *node1 = new TreeNode(1);
-    TreeNode *node2 = new TreeNode(2);
-    node1->left = node2;
-    cout<<s->hasPathSum(node1,0)<<endl;
-
+    Solution s;
+    vector<int> a = {1,2,3,3,3,3,4,5};
+    cout<<s.GetNumberOfK(a, 3)<<endl;
     return 0;
 }
