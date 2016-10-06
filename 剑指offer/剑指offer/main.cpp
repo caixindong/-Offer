@@ -13,8 +13,9 @@
 #include <queue>
 #include <set>
 #include <sstream>
-using namespace std;
 
+
+using namespace std;
 
 struct ListNode {
     int val;
@@ -40,6 +41,29 @@ struct TreeLinkNode {
         
     }
 };
+
+struct RandomListNode {
+    int label;
+    struct RandomListNode *next, *random;
+    RandomListNode(int x) :
+    label(x), next(NULL), random(NULL) {
+    }
+};
+
+class Temp {
+public:
+    static int N;
+    
+    static int SUM;
+    
+    Temp() {
+        N++;
+        SUM += N;
+    }
+    
+};
+int Temp::N = 0;
+int Temp::SUM = 0;
 
 class Solution {
     
@@ -301,6 +325,27 @@ public:
         reverse(s.begin(), s.end());
     }
     
+#pragma mark - 左旋转字符串
+    //跟翻转单词一个道理，翻转3次
+    void reverseStr(string &s,int start, int end) {
+        for (int i = start, j = end; i < j; i++,j--) {
+            char tmp = s[i];
+            s[i] = s[j];
+            s[j] = tmp;
+        }
+    }
+    
+    string LeftRotateString(string str, int n) {
+        if (str.length() == 0 || n <= 0) {
+            return str;
+        }
+        int len = (int)str.length();
+        reverseStr(str, 0, n-1);
+        reverseStr(str, n, len-1);
+        reverseStr(str, 0, len-1);
+        return str;
+    }
+    
 #pragma mark - 字符串全排列
     /**
      * 递归
@@ -349,7 +394,6 @@ public:
 
 #pragma mark - 最长回文字符串
     string longestPalindrome(string s) {
-        
         if (s.length()<=1) {
             return s;
         }
@@ -364,7 +408,7 @@ public:
             int len = 1;
             int left = start;
             int right = end;
-            while (start>=0&&end<n) {
+            while (start>=0 && end<n) {
                 if (s[start]==s[end]) {
                     len = len+2;
                     left = start;
@@ -386,7 +430,7 @@ public:
             len = 0;
             left = start;
             right = end;
-            while (start>=0&&end<n) {
+            while (start>=0 && end<n) {
                 if (s[start]==s[end]) {
                     len = len+2;
                     left = start;
@@ -461,6 +505,32 @@ public:
         }
         
         return (int)num;
+    }
+    
+#pragma mark - 替换空格
+    void replaceSpace(char *str,int length) {
+        int spaceCount = 0;
+        for (int i=0; i<length; i++) {
+            if (str[i]==' ') {
+                spaceCount++;
+            }
+        }
+        if (spaceCount==0) {
+            return;
+        }
+        
+        int newLen = length+2*spaceCount;
+        char* index = str + length;
+        while (index>=str) {
+            if (*index==' ') {
+                str[newLen--] = '0';
+                str[newLen--] = '2';
+                str[newLen--] = '%';
+            }else{
+                str[newLen--] = *index;
+            }
+            index--;
+        }
     }
     
 #pragma mark - ====================数组====================
@@ -862,7 +932,6 @@ public:
                 p2 = p2->next;
             }
   
-        
             p  = p ->next;
         }
         while (p1 != NULL) {
@@ -957,6 +1026,114 @@ public:
             }
         }
         return head;
+    }
+    
+    
+#pragma mark - 复杂链表的复制
+    
+    /**
+     复制所有点
+
+     @param head
+     */
+    void cloneNodes(RandomListNode * head){
+        RandomListNode *node = head;
+        while (node != NULL) {
+            RandomListNode *cloneNode = new RandomListNode(node->label);
+            cloneNode->next = node->next;
+            
+            node->next = cloneNode;
+            node = cloneNode->next;
+        }
+    }
+    
+    
+    /**
+     设置random结点，复制的结点的random结点是原本结点的random结点的下一个
+
+     @param head
+     */
+    void cloneRandomNodes(RandomListNode *head){
+        RandomListNode *node = head;
+        while (node != NULL) {
+            RandomListNode *cloneNodel = node->next;
+            if (node->random != NULL) {
+                cloneNodel->random = node->random->next;
+            }
+            node = cloneNodel->next;
+        }
+    }
+    
+    
+    /**
+     拆链表
+
+     @param head
+
+     @return
+     */
+    RandomListNode* reconnectNodes(RandomListNode *head){
+        RandomListNode *node = head;
+        RandomListNode *cloneHead = NULL;
+        RandomListNode *cloneNode = NULL;
+        
+        if (node != NULL) {
+            cloneHead = node->next;
+            cloneNode = cloneHead;
+            node->next = cloneNode->next;
+            node = node->next;
+        }
+        
+        while (node != NULL) {
+            cloneNode->next = node->next;
+            cloneNode = cloneNode->next;
+            node->next = cloneNode->next;
+            node = node->next;
+        }
+        return cloneHead;
+    }
+    
+    
+    /**
+     合并
+
+     @param pHead
+
+     @return
+     */
+    RandomListNode* Clone(RandomListNode* pHead) {
+        cloneNodes(pHead);
+        cloneRandomNodes(pHead);
+        return  reconnectNodes(pHead);
+    }
+    
+#pragma mark - 二叉搜索树转化为有序双链表
+    //遍历到的结点左边接左子树最大的结点，右边接右子树最小的结点
+    TreeNode* Convert(TreeNode* pRootOfTree) {
+        if (pRootOfTree == NULL || (pRootOfTree->left==NULL && pRootOfTree->right==NULL)) {
+            return pRootOfTree;
+        }
+        
+        TreeNode *leftHead = Convert(pRootOfTree->left);
+        TreeNode *pLeft = leftHead;
+        //获取左边链表的最后一个结点
+        while (pLeft!=NULL && pLeft->right != NULL) {
+            pLeft = pLeft->right;
+        }
+        
+        if (pLeft != NULL) {
+            pLeft->right = pRootOfTree;
+            pRootOfTree->left = pLeft;
+        }
+        
+        //获取右边链表的第一个结点
+        TreeNode *rightHead = Convert(pRootOfTree->right);
+        if (rightHead != NULL) {
+            rightHead->left = pRootOfTree;
+            pRootOfTree->right = rightHead;
+        }
+        
+        return leftHead!=NULL? leftHead:pRootOfTree;
     }
     
 #pragma mark - ====================二叉树====================
@@ -1449,6 +1626,27 @@ public:
         }
     }
     
+#pragma mark - 从尾到头打印链表
+    vector<int> printListFromTailToHead(struct ListNode* head) {
+        if (head==NULL) {
+            return {};
+        }else{
+            stack<int> stack;
+            vector<int> ve;
+            ListNode* p = head;
+            while (p!=NULL) {
+                stack.push(p->val);
+                p = p->next;
+            }
+            while (!stack.empty()) {
+                int tmp = stack.top();
+                ve.push_back(tmp);
+                stack.pop();
+            }
+            return ve;
+        }
+    }
+    
 #pragma mark - 位运算
     //通过异或可以实现两个数互换
     //某个数异或-1，相当于取反
@@ -1508,54 +1706,25 @@ public:
         
     }
     
+#pragma mark - 不用加减乘除做加法
+    /**
+     *  每一位先异或，再通过想与和左移获得进位，将两个结果异或就是结果
+     *
+     */
+    int Add(int num1, int num2) {
+        int sum;
+        int carry;
+        do {
+            sum = num1 ^ num2;
+            carry = (num1 & num2)<<1;
+            num1 = sum;
+            num2 = carry;
+        } while (carry != 0);
+        return sum;
+    }
+    
+    
 #pragma mark - ====================未分类====================
-    
-#pragma mark - 替换空格
-    void replaceSpace(char *str,int length) {
-        int spaceCount = 0;
-        for (int i=0; i<length; i++) {
-            if (str[i]==' ') {
-                spaceCount++;
-            }
-        }
-        if (spaceCount==0) {
-            return;
-        }
-        
-        int newLen = length+2*spaceCount;
-        char* index = str + length;
-        while (index>=str) {
-            if (*index==' ') {
-                str[newLen--] = '0';
-                str[newLen--] = '2';
-                str[newLen--] = '%';
-            }else{
-                str[newLen--] = *index;
-            }
-            index--;
-        }
-    }
-    
-#pragma mark - 从尾到头打印链表
-    vector<int> printListFromTailToHead(struct ListNode* head) {
-        if (head==NULL) {
-            return {};
-        }else{
-            stack<int> stack;
-            vector<int> ve;
-            ListNode* p = head;
-            while (p!=NULL) {
-                stack.push(p->val);
-                p = p->next;
-            }
-            while (!stack.empty()) {
-                int tmp = stack.top();
-                ve.push_back(tmp);
-                stack.pop();
-            }
-            return ve;
-        }
-    }
     
 #pragma mark - 变态跳台阶问题
     int jumpFloorII(int number) {
@@ -1659,7 +1828,6 @@ public:
         return mx;
     }
 
-    
 #pragma mark - 大数相乘
     void reverseString(string &str){
         size_t i = 0;
@@ -1670,7 +1838,6 @@ public:
             str[j] = tmp;
         }
     }
-    
     
     string multiLargeNum(string a, string b){
         size_t n = a.length();
@@ -1788,11 +1955,66 @@ public:
         return result;
     }
     
+#pragma mark - 和为S的连续正数序列
+    /**
+     *  因为每个序列至少包含2个数字，序列头部从1开始，尾部从2开始,如果序列和小于sum，则尾部往后移1位再包含一个数，如果大于sum，则去掉序列头部，头部往后移一位
+     *
+     */
+    vector<vector<int> > FindContinuousSequence(int sum) {
+        vector<vector<int>> result;
+        result.resize(0);
+        int mid = (sum + 1)>>1;
+        int small = 1;
+        int big = 2;
+        int tmpSum = small + big;
+        while (small < mid) {
+            
+            if (tmpSum == sum) {
+                result.push_back(getList(small, big));
+            }
+            
+            while (small < mid && tmpSum > sum) {
+                tmpSum -= small;
+                small++;
+                if (tmpSum == sum) {
+                    result.push_back(getList(small, big));
+                }
+            }
+            
+            big++;
+            tmpSum += big;
+        }
+        
+        return result;
+    }
+    
+    vector<int> getList(int start, int end){
+        vector<int> list;
+        list.resize(0);
+        for (int i = start; i<= end; i++) {
+            list.push_back(i);
+        }
+        return list;
+    }
+    
+#pragma mark - 求1+2+3+...+n
+    //利用构造函数
+    int Sum_Solution(int n) {
+        Temp *t = new Temp[n];
+        delete [] t;
+        t = NULL;
+        return Temp::SUM;
+    }
+    
+    //利用短路原则
+    int Sum_Solution02(int n) {
+        int sum = 0;
+        n == 0 || (sum = Sum_Solution02(n-1));
+        return sum + n;
+    }
 };
 
 int main(int argc, const char * argv[]) {
-    Solution s;
-    vector<int> a = {1,2,3,3,3,3,4,5};
-    cout<<s.GetNumberOfK(a, 3)<<endl;
+ 
     return 0;
 }
